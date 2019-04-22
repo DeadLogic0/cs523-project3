@@ -43,8 +43,8 @@ mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1
                                 for i2 in range(num_of_layer2_nodes)]
                                     for i3 in range(num_of_marios)])
 mutation_prob = 3/(num_of_layer1_nodes + num_of_layer2_nodes)
-num_of_tourn_select = 5
-num_of_best_to_select = 15
+num_of_tourn_select = 15
+num_of_best_to_select = 30
 num_of_gen = 10
 num_of_matches = 3
 jump_threshold = 500
@@ -243,12 +243,15 @@ def genetic_algorithm():
         if(stop == True): break
         best = [0]*num_of_best_to_select
         for i in range(num_of_best_to_select):
+            ids = [a for a in range(num_of_tourn_select)]
             results = np.array([0]*num_of_tourn_select)
             random_marios = random.sample(range(0,num_of_marios),num_of_tourn_select)
             for a in range(num_of_matches):
                 if(stop == True): break
-                results += mario_fight(random_marios)
-                random.shuffle(random_marios)
+                result = mario_fight([random_marios[id] for id in ids])
+                ids , result = (list(l) for l in zip(*sorted(zip(ids , result))))
+                results += result
+                random.shuffle(ids)
             b , IDs = (list(l) for l in zip(*sorted(zip(results , random_marios))))
             best[i] = IDs[num_of_tourn_select-1]
         if(displayBest == True):
