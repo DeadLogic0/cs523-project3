@@ -16,7 +16,7 @@ num_of_marios = 150
 mario_defeat_bounce = .75
 
 player = False
-displayArena = True
+displayArena = False
 
 fps = 60
 gravity = 750
@@ -28,7 +28,7 @@ arena_height = 500
 arena_floor = 1
 arena_leftwall = 1
 arena_rightwall = arena_leftwall + arena_len - mario_width
-arena_max_duration = 3000
+arena_max_duration = 1000
 arena_move_polling_rate = 15
 
 num_of_input_nodes = 6
@@ -43,7 +43,11 @@ mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1
 mutation_prob = 3/(num_of_layer1_nodes + num_of_layer2_nodes)
 num_of_tourn_select = 5
 num_of_best_to_select = 15
+num_of_gen = 1
+num_of_matches = 3
 jump_threshold = 500
+
+stop = False
 
 file_names = "gen"
 
@@ -55,7 +59,7 @@ pygame.display.set_caption('marios')
 
 #input is a list of ID's for each mario
 def mario_fight(marios):
-    stop = False
+    global stop
     num_of_marios_fighting = len(marios);
     arena_spacing = arena_rightwall/(num_of_marios_fighting-1)
     mario_xs = np.array([arena_leftwall+i*arena_spacing for
@@ -69,7 +73,6 @@ def mario_fight(marios):
 
     playerxmod = 0
     for step in range(arena_max_duration):
-
         if stop == True: break
         if(displayArena == True):
             display.fill((0,0,0))
@@ -153,8 +156,8 @@ def mario_fight(marios):
                 mario_y_vel[id] = mario_y_accel
             if(abs(mario_x_vel[id]) >= mario_max_x_vel):
                 mario_x_vel[id] = xmod*mario_max_x_vel
-            if(displayArena == True and player == False): display_mario(mario_xs[id],mario_ys[id])
-            if(displayArena == True and player == True): display_luigi(mario_xs[id],mario_ys[id])
+            if(displayArena == True and player == False): display_mario(marios[id], mario_xs[id], mario_ys[id])
+            if(displayArena == True and player == True): display_luigi(marios[id], mario_xs[id], mario_ys[id])
 
         if(player == True and IDs[0] == 0):
             mario_x_vel[0] += playerxmod * mario_x_accel
@@ -162,7 +165,7 @@ def mario_fight(marios):
                 mario_y_vel[0] = mario_y_accel
             if(abs(mario_x_vel[0]) >= mario_max_x_vel):
                 mario_x_vel[0] = playerxmod * mario_max_x_vel
-            display_mario(mario_xs[0] , mario_ys[0])
+            display_mario(0,mario_xs[0] , mario_ys[0])
 
         if(displayArena == True):
             pygame.display.update()
@@ -185,25 +188,41 @@ def get_move(marioID, marios):
             return [0, 1]
         return [0, 0]
 
-def display_mario(x,y):
+def display_mario(marioID,x,y):
     global display
-    pygame.draw.rect(display,(200,50,50),
+    pygame.draw.rect(display,(200-marioID,50,50),
             pygame.Rect(x,
                         arena_height - y - mario_height,
                         mario_width,
                         mario_height),0)
 
-def display_luigi(x,y):
+def display_luigi(marioID,x,y):
     global display
-    pygame.draw.rect(display,(50,200,50),
+    pygame.draw.rect(display,(50,200-marioID,50),
             pygame.Rect(x,
                         arena_height - y - mario_height,
                         mario_width,
                         mario_height),0)
+
+
+def genetic_algorithm():
+    global stop
+    for _ in range(num_of_gen):
+        if(stop == True): break
+        best = np.array([0]*num_of_best_to_select)
+        for i in range(num_of_best_to_select):
+            results = np.array([0]*num_of_tourn_select)
+            random_marios = random.sample(range(0,num_of_marios),num_of_tourn_select)
+            for a in range(num_of_matches):
+                if(stop == True): break
+                results += mario_fight(random_marios)
+                random.shuffle(random_marios)
+            b , IDs = (list(l) for l in zip(*sorted(zip(results , random_marios))))
+            best[i] = IDs[num_of_tourn_select-1]
 
 
 def main():
-    print(mario_fight(np.array([2,4,5,1,8,34,67,90])))
+    genetic_algorithm()
     pygame.quit()
 
 if __name__ == "__main__":
