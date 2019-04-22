@@ -17,6 +17,7 @@ mario_defeat_bounce = .75
 
 player = False
 displayArena = False
+displayBest = True
 
 fps = 60
 gravity = 750
@@ -28,7 +29,7 @@ arena_height = 500
 arena_floor = 1
 arena_leftwall = 1
 arena_rightwall = arena_leftwall + arena_len - mario_width
-arena_max_duration = 1000
+arena_max_duration = 1500
 arena_move_polling_rate = 15
 
 num_of_input_nodes = 6
@@ -43,7 +44,7 @@ mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1
 mutation_prob = 3/(num_of_layer1_nodes + num_of_layer2_nodes)
 num_of_tourn_select = 5
 num_of_best_to_select = 15
-num_of_gen = 1
+num_of_gen = 10
 num_of_matches = 3
 jump_threshold = 500
 
@@ -204,12 +205,42 @@ def display_luigi(marioID,x,y):
                         mario_width,
                         mario_height),0)
 
+def mutation(best):
+    global mario_nn_layer1
+    global mario_nn_layer2
+    for i in range(num_of_marios):
+        if(i in best): continue
+        for i2 in range(num_of_layer1_nodes):
+            if(random.random() > mutation_prob):
+                mario_nn_layer1[i][i2] = [random.random()*2 - 1 for a in range(num_of_input_nodes)]
+        for i2 in range(num_of_layer2_nodes):
+            if(random.random() > mutation_prob):
+                mario_nn_layer2[i][i2] = [random.random()*2 - 1 for a in range(num_of_layer1_nodes)]
+
+def crossover(best):
+    global mario_nn_layer1
+    global mario_nn_layer2
+    for i in range(num_of_marios):
+        if(i in best): continue
+        best_2 = random.sample(best,2)
+        cx_point = random.randint(1,num_of_layer1_nodes + num_of_layer2_nodes-1)
+        if(cx_point < num_of_layer1_nodes):
+            mario_nn_layer1[i] = np.array([mario_nn_layer1[best_2[0]][c] if c < cx_point
+                                    else mario_nn_layer1[best_2[1]][c] for c in range(num_of_layer1_nodes)])
+            mario_nn_layer2[i] = np.copy(mario_nn_layer2[best_2[1]])
+        else:
+            mario_nn_layer1[i] = np.copy(mario_nn_layer1[best_2[1]])
+            mario_nn_layer2[i] = np.array([mario_nn_layer2[best_2[0]][c] if c < cx_point
+                                    else mario_nn_layer2[best_2[1]][c] for c in range(num_of_layer2_nodes)])
+
 
 def genetic_algorithm():
     global stop
-    for _ in range(num_of_gen):
+    global displayArena
+    for gen in range(num_of_gen):
+        print("gen: "+str(gen))
         if(stop == True): break
-        best = np.array([0]*num_of_best_to_select)
+        best = [0]*num_of_best_to_select
         for i in range(num_of_best_to_select):
             results = np.array([0]*num_of_tourn_select)
             random_marios = random.sample(range(0,num_of_marios),num_of_tourn_select)
@@ -219,7 +250,14 @@ def genetic_algorithm():
                 random.shuffle(random_marios)
             b , IDs = (list(l) for l in zip(*sorted(zip(results , random_marios))))
             best[i] = IDs[num_of_tourn_select-1]
-
+        if(displayBest == True):
+            displayArena = True
+            mario_fight(best)
+            display.fill((0,0,0))
+            displayArena = False
+        if(gen < num_of_gen):
+            crossover(best)
+            mutation(best)
 
 def main():
     genetic_algorithm()
