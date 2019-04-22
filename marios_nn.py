@@ -18,6 +18,7 @@ mario_defeat_bounce = .75
 player = False
 displayArena = False
 displayBest = True
+save_gens = True
 
 fps = 60
 gravity = 750
@@ -258,6 +259,8 @@ def genetic_algorithm():
         if(gen < num_of_gen):
             crossover(best)
             mutation(best)
+        if(save_gens == True):
+            np.savetxt(file_names+str(gen)+'.dat',best)
 
 def main():
     genetic_algorithm()
