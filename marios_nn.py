@@ -12,8 +12,11 @@ mario_width = 50
 mario_max_x_vel = 250
 mario_y_accel = 500
 mario_x_accel = 20
-num_of_marios = 3
+num_of_marios = 150
 mario_defeat_bounce = .75
+
+player = False
+displayArena = True
 
 fps = 60
 gravity = 750
@@ -26,7 +29,23 @@ arena_floor = 1
 arena_leftwall = 1
 arena_rightwall = arena_leftwall + arena_len - mario_width
 arena_max_duration = 3000
+arena_move_polling_rate = 15
 
+num_of_input_nodes = 6
+num_of_layer1_nodes = 8
+num_of_layer2_nodes = 3
+mario_nn_layer1 = np.array([[[random.random()*2 - 1 for i in range(num_of_input_nodes)]
+                                for i2 in range(num_of_layer1_nodes)]
+                                    for i3 in range(num_of_marios)])
+mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1_nodes)]
+                                for i2 in range(num_of_layer2_nodes)]
+                                    for i3 in range(num_of_marios)])
+mutation_prob = 3/(num_of_layer1_nodes + num_of_layer2_nodes)
+num_of_tourn_select = 5
+num_of_best_to_select = 15
+jump_threshold = 500
+
+file_names = "gen"
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -48,12 +67,28 @@ def mario_fight(marios):
     mario_score = np.array([0]*num_of_marios_fighting)
     IDs = [n for n in range(num_of_marios_fighting)]
 
-    xmod = 0
-
+    playerxmod = 0
     for step in range(arena_max_duration):
+
         if stop == True: break
+        if(displayArena == True):
+            display.fill((0,0,0))
+            playerymod = 0
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    stop = True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        playerymod = 1
+                    if event.key == pygame.K_RIGHT:
+                        playerxmod = 1
+                    if event.key == pygame.K_LEFT:
+                        playerxmod = -1
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                        playerxmod = 0
+
         new_mario_ys = np.array([0]*num_of_marios_fighting, dtype=np.float)
-        display.fill((0,0,0))
         for i in range(num_of_marios_fighting):
             if(mario_status[i] == False): continue
             mario_xs[i] = mario_xs[i] + mario_x_vel[i] / fps
@@ -70,6 +105,7 @@ def mario_fight(marios):
             if(new_mario_ys[i] < arena_floor):
                 new_mario_ys[i] = arena_floor
                 mario_y_vel[i] = 0
+
         for i in range(num_of_marios_fighting):
             if(mario_status[i] == False): continue
             mario_x = mario_xs[i]
@@ -88,7 +124,7 @@ def mario_fight(marios):
                             if(IDs[a] == i):
                                 IDs = np.delete(IDs,a)
                                 break
-                        mario_y_vel[i2] = mario_y_accel*mario_defeat_bounce
+                        mario_y_vel[i2] = mario_y_accel * mario_defeat_bounce
                         mario_score[i2] += 1
                         if(len(IDs) == 1): return mario_score
                         break
@@ -97,59 +133,69 @@ def mario_fight(marios):
         _ , ID = (list(l) for l in zip(*sorted(zip(mario_xs[IDs],IDs))))
         for i in range(len(ID)):
             id = ID[i]
-            if(i == 0): continue
-            # if(i == 0):
-            #     xmod,ymod = get_move(np.array([marios[id],
-            #                                    mario_xs[ id ]   , mario_ys[ id ],
-            #                                    mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
-            #                                    0                   ,     0]))
-            # elif(i == num_of_marios_fighting - 1):
-            #     xmod,ymod = get_move(np.array([marios[id],
-            #                                    mario_xs[ id ]   , mario_ys[ id ],
-            #                                    0                   ,     0            ,
-            #                                    mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
-            # else:
-            #     xmod,ymod = get_move(np.array([marios[id],
-            #                                    mario_xs[ id ]   , mario_ys[ id ],
-            #                                    mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
-            #                                    mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
-            # mario_x_vel[i] += xmod*mario_x_accel
-            # if(ymod == 1 and mario_ys[i] == arena_floor):
-            #     mario_y_vel[i] = mario_y_accel
-            # if(abs(mario_x_vel[i]) >= mario_max_x_vel):
-            #     mario_x_vel[i] = xmod*mario_max_x_vel
-            display_mario(mario_xs[id],mario_ys[id])
-        i = 0
-        id = ID[0]
-        ymod = 0
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                stop = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    ymod = 1
-                if event.key == pygame.K_RIGHT:
-                    xmod = 1
-                if event.key == pygame.K_LEFT:
-                    xmod = -1
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
-                    xmod = 0
-        mario_x_vel[i] += xmod*mario_x_accel
-        if(ymod == 1 and mario_ys[i] == arena_floor):
-            mario_y_vel[i] = mario_y_accel
-        if(abs(mario_x_vel[i]) >= mario_max_x_vel):
-            mario_x_vel[i] = xmod*mario_max_x_vel
-        display_mario(mario_xs[id],mario_ys[id])
-        pygame.display.update()
-        clock.tick(fps)
+            if(id == 0 and player == True): continue
+            if(step % arena_move_polling_rate != 0):
+                0
+            elif(i == 0):
+                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
+                                                  mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
+                                                  0                   ,     0]))
+            elif(i == len(ID) - 1):
+                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
+                                                  0                   ,     0            ,
+                                                  mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
+            else:
+                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
+                                                  mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
+                                                  mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
+            mario_x_vel[id] += xmod*mario_x_accel
+            if(ymod == 1 and mario_ys[id] == arena_floor):
+                mario_y_vel[id] = mario_y_accel
+            if(abs(mario_x_vel[id]) >= mario_max_x_vel):
+                mario_x_vel[id] = xmod*mario_max_x_vel
+            if(displayArena == True and player == False): display_mario(mario_xs[id],mario_ys[id])
+            if(displayArena == True and player == True): display_luigi(mario_xs[id],mario_ys[id])
 
-def get_move(marios):
-    return (random.randint(-1,2),random.randint(0,2))
+        if(player == True and IDs[0] == 0):
+            mario_x_vel[0] += playerxmod * mario_x_accel
+            if(playerymod == 1 and mario_ys[0] == arena_floor):
+                mario_y_vel[0] = mario_y_accel
+            if(abs(mario_x_vel[0]) >= mario_max_x_vel):
+                mario_x_vel[0] = playerxmod * mario_max_x_vel
+            display_mario(mario_xs[0] , mario_ys[0])
+
+        if(displayArena == True):
+            pygame.display.update()
+            clock.tick(fps)
+    return mario_score
+
+def get_move(marioID, marios):
+    move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer1[marioID].dot(marios)])
+    move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer2[marioID].dot(move)])
+    if(move[0] > move[1]):
+        if(move[2] > jump_threshold):
+            return [-1, 1]
+        return [-1, 0]
+    elif(move[1] > move[0]):
+        if(move[2] > jump_threshold):
+            return [1, 1]
+        return [1, 0]
+    else:
+        if(move[2] > jump_threshold):
+            return [0, 1]
+        return [0, 0]
 
 def display_mario(x,y):
     global display
-    pygame.draw.rect(display,(200,200,200),
+    pygame.draw.rect(display,(200,50,50),
+            pygame.Rect(x,
+                        arena_height - y - mario_height,
+                        mario_width,
+                        mario_height),0)
+
+def display_luigi(x,y):
+    global display
+    pygame.draw.rect(display,(50,200,50),
             pygame.Rect(x,
                         arena_height - y - mario_height,
                         mario_width,
