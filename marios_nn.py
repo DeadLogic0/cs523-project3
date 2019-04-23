@@ -5,14 +5,15 @@ import numpy
 import time
 import pygame
 import os
+import math
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as Pool2
 
 mario_height = 70
 mario_width = 50
-mario_max_x_vel = 250
+mario_max_x_vel = 500#250
 mario_y_up_accel = 500
-mario_y_down_accel = 25
+mario_y_down_accel = 50
 mario_x_accel = 20
 num_of_marios = 150
 mario_defeat_bounce = .75
@@ -59,6 +60,13 @@ arena_rightwall = arena_leftwall + arena_len - mario_width
 arena_max_duration = 1500
 arena_move_polling_rate = 15
 ground_width = 40
+random_y_max = mario_height*3
+ground_color = (139,69,19)
+ground_rect = pygame.Rect(0,
+        arena_height,
+        arena_len,
+        ground_width)
+background_color = (0,108,170)
 
 num_of_input_nodes = 12
 num_of_layer1_nodes = 8
@@ -70,10 +78,10 @@ mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1
                                 for i2 in range(num_of_layer2_nodes)]
                                     for i3 in range(num_of_marios)])
 mutation_prob = 3/(num_of_layer1_nodes + num_of_layer2_nodes)
-num_of_tourn_select = 10
-num_of_best_to_select = 30
+num_of_tourn_select = 15
+num_of_best_to_select = 20
 num_of_gen = 50
-num_of_matches = 3
+num_of_matches = 5
 jump_threshold = 500
 
 stop = False
@@ -91,9 +99,11 @@ def mario_fight(marios):
     global stop
     num_of_marios_fighting = len(marios);
     arena_spacing = arena_rightwall/(num_of_marios_fighting-1)
+    arena_spacing -= random.randint(0,math.floor(arena_spacing/2))
     mario_xs = np.array([arena_leftwall+i*arena_spacing for
             i in range(num_of_marios_fighting)], dtype=np.float);
-    mario_ys = np.array([arena_floor]*num_of_marios_fighting, dtype=np.float)
+    mario_ys = np.array([arena_floor+random.randint(0,random_y_max) for
+            a in range(num_of_marios_fighting)], dtype=np.float)
     mario_x_vel = np.array([0]*num_of_marios_fighting, dtype=np.float)
     mario_y_vel = np.array([0]*num_of_marios_fighting, dtype=np.float)
     mario_status = np.array([True]*num_of_marios_fighting)
@@ -105,12 +115,8 @@ def mario_fight(marios):
     for step in range(arena_max_duration):
         if stop == True: break
         if(displayArena == True):
-            display.fill((30,168,227))
-            pygame.draw.rect(display,(139,69,19),
-                pygame.Rect(0,
-                        arena_height,
-                        arena_len,
-                        ground_width),0)
+            display.fill(background_color)
+            pygame.draw.rect(display,ground_color,ground_rect,0)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 stop = True
@@ -330,12 +336,8 @@ def genetic_algorithm():
             arena_move_polling_rate = 10
             # player = True
             mario_fight(best)
-            display.fill((30,168,227))
-            pygame.draw.rect(display,(139,69,19),
-                pygame.Rect(0,
-                        arena_height,
-                        arena_len,
-                        ground_width),0)
+            display.fill(background_color)
+            pygame.draw.rect(display,ground_color,ground_rect,0)
             # player = False
             displayArena = False
         if(gen < num_of_gen):
