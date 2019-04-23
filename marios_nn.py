@@ -4,6 +4,7 @@ import random
 import numpy
 import time
 import pygame
+import os
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as Pool2
 
@@ -69,7 +70,7 @@ mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1
                                 for i2 in range(num_of_layer2_nodes)]
                                     for i3 in range(num_of_marios)])
 mutation_prob = 3/(num_of_layer1_nodes + num_of_layer2_nodes)
-num_of_tourn_select = 15
+num_of_tourn_select = 10
 num_of_best_to_select = 30
 num_of_gen = 50
 num_of_matches = 3
@@ -77,7 +78,7 @@ jump_threshold = 500
 
 stop = False
 
-file_names = "gen"
+file_names = "best"
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -110,23 +111,23 @@ def mario_fight(marios):
                         arena_height,
                         arena_len,
                         ground_width),0)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    stop = True
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        playerymod = 1
-                    if event.key == pygame.K_DOWN:
-                        playerymod = -1
-                    if event.key == pygame.K_RIGHT:
-                        playerxmod = 1
-                    if event.key == pygame.K_LEFT:
-                        playerxmod = -1
-                if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
-                        playerxmod = 0
-                    if event.key == pygame.K_DOWN:
-                        playerymod = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                stop = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    playerymod = 1
+                if event.key == pygame.K_DOWN:
+                    playerymod = -1
+                if event.key == pygame.K_RIGHT:
+                    playerxmod = 1
+                if event.key == pygame.K_LEFT:
+                    playerxmod = -1
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                    playerxmod = 0
+                if event.key == pygame.K_DOWN:
+                    playerymod = 0
         new_mario_ys = np.array([0]*num_of_marios_fighting, dtype=np.float)
         for i in range(num_of_marios_fighting):
             if(mario_status[i] == False): continue
@@ -288,10 +289,24 @@ def genetic_algorithm():
     global stop
     global displayArena
     global player
+    global fps
+    global arena_max_duration
+    global arena_move_polling_rate
+    path = "best_nn"
+    try:
+        os.mkdir(path)
+    except OSError:
+        0
+    else:
+        0
     for gen in range(num_of_gen):
+        fps = 20
+        arena_max_duration = 100*fps
+        arena_move_polling_rate = 1*fps
         print("gen: "+str(gen))
         if(stop == True): break
         best = [0]*num_of_best_to_select
+        scores = [0]*num_of_best_to_select
         for i in range(num_of_best_to_select):
             ids = [a for a in range(num_of_tourn_select)]
             results = np.array([0]*num_of_tourn_select)
@@ -302,10 +317,17 @@ def genetic_algorithm():
                 ids , result = (list(l) for l in zip(*sorted(zip(ids , result))))
                 results += result
                 random.shuffle(ids)
-            b , IDs = (list(l) for l in zip(*sorted(zip(results , random_marios))))
+            results , IDs = (list(l) for l in zip(*sorted(zip(results , random_marios))))
             best[i] = IDs[num_of_tourn_select-1]
+            scores[i] = results[num_of_tourn_select-1]
+        best = numpy.unique(best).tolist()
+        print("Num of Unique Best:  "+ str(len(best)))
+        print("Average Defeated Marios:  "+ str(np.mean(scores)/num_of_matches)+"\n")
         if(displayBest == True):
             displayArena = True
+            fps = 30
+            arena_max_duration = 750
+            arena_move_polling_rate = 10
             # player = True
             mario_fight(best)
             display.fill((30,168,227))
@@ -319,9 +341,17 @@ def genetic_algorithm():
         if(gen < num_of_gen):
             crossover(best)
             mutation(best)
+        path = "best_nn\\gen"+str(gen)+"\\"
+        try:
+            os.mkdir(path)
+        except OSError:
+            0
+        else:
+            0
         if(save_gens == True):
-            np.savetxt(file_names+str(gen)+'-1.dat',mario_nn_layer1[best[0]])
-            np.savetxt(file_names+str(gen)+'-1.dat',mario_nn_layer2[best[0]])
+            for i in range(len(best)):
+                np.savetxt(path+file_names+str(i)+'_1.dat',mario_nn_layer1[best[0]])
+                np.savetxt(path+file_names+str(i)+'_2.dat',mario_nn_layer2[best[0]])
 
 def main():
     genetic_algorithm()
