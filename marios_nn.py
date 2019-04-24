@@ -9,8 +9,8 @@ import math
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as Pool2
 
-mario_height = 70
-mario_width = 55
+mario_height = 60
+mario_width = 42
 mario_right_sprites = [pygame.image.load(
             'sprites\\mario\\mario-right\\mario'+str(i+1)+'.png') for i in range(6)]
 mario_right_sprites = [pygame.transform.scale(mario_right_sprites[i],
@@ -72,8 +72,8 @@ ground_rect = pygame.Rect(0,
 
 background_color = (0,108,170)
 
-num_of_input_nodes = 12
-num_of_layer1_nodes = 14
+num_of_input_nodes = 6 #12 if inputing velocities
+num_of_layer1_nodes = 10 #14 if inputting velocities
 num_of_layer2_nodes = 6
 mario_nn_layer1 = np.array([[[random.random()*2 - 1 for i in range(num_of_input_nodes)]
                                 for i2 in range(num_of_layer1_nodes)]
@@ -83,7 +83,7 @@ mario_nn_layer2 = np.array([[[random.random()*2 - 1 for i in range(num_of_layer1
                                     for i3 in range(num_of_marios)])
 mutation_prob = 6/(num_of_layer1_nodes + num_of_layer2_nodes)
 crossover_probability = 0.4
-num_of_tourn_select = 15
+num_of_tourn_select = 8
 num_of_best_to_select = 30
 num_of_gen = 100
 num_of_matches = 3
@@ -193,17 +193,29 @@ def mario_fight(marios):
             if(step % arena_move_polling_rate != 0):
                 0
             elif(i == 0):
-                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
-                                        mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ], mario_x_vel[ ID[i+1] ], mario_y_vel[ ID[i+1] ],
-                                        0                   ,     0              ,        0              ,            0]))
+                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
+                                        mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
+                                        0                   ,     0]))
             elif(i == len(ID) - 1):
-                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
-                                         0                   ,     0            ,    0     ,         0,
-                                        mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ], mario_x_vel[ ID[i-1] ], mario_y_vel[ ID[i-1] ]]))
+                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
+                                         0                   ,     0 ,
+                                        mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
             else:
-                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
-                                                  mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ], mario_x_vel[ ID[i+1] ], mario_y_vel[ ID[i+1] ],
-                                                  mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ], mario_x_vel[ ID[i-1] ], mario_y_vel[ ID[i-1] ]]))
+                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
+                                                  mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
+                                                  mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
+            # elif(i == 0):#used for inputting velocities but ai wouldnt train fast enough
+            #     xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
+            #                             mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ], mario_x_vel[ ID[i+1] ], mario_y_vel[ ID[i+1] ],
+            #                             0                   ,     0              ,        0              ,            0]))
+            # elif(i == len(ID) - 1):
+            #     xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
+            #                              0                   ,     0            ,    0     ,         0,
+            #                             mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ], mario_x_vel[ ID[i-1] ], mario_y_vel[ ID[i-1] ]]))
+            # else:
+            #     xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
+            #                                       mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ], mario_x_vel[ ID[i+1] ], mario_y_vel[ ID[i+1] ],
+            #                                       mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ], mario_x_vel[ ID[i-1] ], mario_y_vel[ ID[i-1] ]]))
             mario_x_vel[id] += xmod*mario_x_accel
             if(ymod == 1 and mario_ys[id] == arena_floor):
                 mario_y_vel[id] = mario_y_up_accel
