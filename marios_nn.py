@@ -69,8 +69,8 @@ ground_rect = pygame.Rect(0,
 background_color = (0,108,170)
 
 num_of_input_nodes = 12
-num_of_layer1_nodes = 8
-num_of_layer2_nodes = 4
+num_of_layer1_nodes = 20
+num_of_layer2_nodes = 6
 mario_nn_layer1 = np.array([[[random.random()*2 - 1 for i in range(num_of_input_nodes)]
                                 for i2 in range(num_of_layer1_nodes)]
                                     for i3 in range(num_of_marios)])
@@ -82,7 +82,8 @@ num_of_tourn_select = 15
 num_of_best_to_select = 20
 num_of_gen = 50
 num_of_matches = 5
-jump_threshold = 500
+jump_threshold = 300
+move_threshold = 300
 
 stop = False
 
@@ -225,15 +226,22 @@ def mario_fight(marios):
 def get_move(marioID, marios):
     move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer1[marioID].dot(marios)])
     move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer2[marioID].dot(move)])
+    # move = mario_nn_layer1[marioID].dot(marios)
+    # move = mario_nn_layer2[marioID].dot(move)
     returnmove = [0, 0] #default not moving
-    if(move[0] > move[1]):
-        returnmove[0] = -1 #right
-    elif(move[1] > move[0]):
-        returnmove[0] = 1 #left
-    if(move[2] > move[3]):
-        returnmove[1] = 1 #up
-    elif(move[3] > move[2]):
+    #[left,stop,right,down,no jump,jump]
+    if(move[1] > move[0] and move[1] > move[2]):
+        returnmove[0] = 0 #stop
+    elif(move[0] > move[1] and move[0] > move[2]):
+        returnmove[0] = -1 #left
+    elif(move[2] > move[1] and move[2] > move[0]):
+        returnmove[0] = 1 #right
+    if(move[4] > move[3] and move[4] > move[5]):
+        returnmove[1] = 0 #no jump
+    elif(move[3] > move[4] and move[3] > move[5]):
         returnmove[1] = -1 #down
+    elif(move[5] > move[3] and move[5] > move[4]):
+        returnmove[1] = 1 #jump
     return returnmove
 
 def display_mario(step, marioID, x, y, xvel, yvel):
@@ -308,7 +316,7 @@ def genetic_algorithm():
     for gen in range(num_of_gen):
         fps = 20
         arena_max_duration = 100*fps
-        arena_move_polling_rate = 1*fps
+        arena_move_polling_rate = 3
         print("gen: "+str(gen))
         if(stop == True): break
         best = [0]*num_of_best_to_select
@@ -333,12 +341,12 @@ def genetic_algorithm():
             displayArena = True
             fps = 30
             arena_max_duration = 750
-            arena_move_polling_rate = 10
-            # player = True
+            arena_move_polling_rate = 1
+            #player = True
             mario_fight(best)
             display.fill(background_color)
             pygame.draw.rect(display,ground_color,ground_rect,0)
-            # player = False
+            #player = False
             displayArena = False
         if(gen < num_of_gen):
             crossover(best)
