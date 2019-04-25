@@ -12,31 +12,31 @@ from multiprocessing.dummy import Pool as Pool2
 mario_height = 60
 mario_width = 42
 mario_right_sprites = [pygame.image.load(
-            'sprites\\mario\\mario-right\\mario'+str(i+1)+'.png') for i in range(6)]
+            'sprites/mario/mario-right/mario'+str(i+1)+'.png') for i in range(6)]
 mario_right_sprites = [pygame.transform.scale(mario_right_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
 mario_left_sprites = [pygame.image.load(
-            'sprites\\mario\\mario-left\\mario'+str(i+1)+'.png') for i in range(6)]
+            'sprites/mario/mario-left/mario'+str(i+1)+'.png') for i in range(6)]
 mario_left_sprites = [pygame.transform.scale(mario_left_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
-mario_right_jump = pygame.image.load('sprites\\mario\\mario-right\\mariojump.png')
+mario_right_jump = pygame.image.load('sprites/mario/mario-right/mariojump.png')
 mario_right_jump = pygame.transform.scale(mario_right_jump,(mario_width,mario_height))
-mario_left_jump = pygame.image.load('sprites\\mario\\mario-left\\mariojump.png')
+mario_left_jump = pygame.image.load('sprites/mario/mario-left/mariojump.png')
 mario_left_jump = pygame.transform.scale(mario_left_jump,(mario_width,mario_height))
 luigi_right_sprites = [pygame.image.load(
-            'sprites\\luigi\\luigi-right\\luigi'+str(i+1)+'.png') for i in range(6)]
+            'sprites/luigi/luigi-right/luigi'+str(i+1)+'.png') for i in range(6)]
 luigi_right_sprites = [pygame.transform.scale(luigi_right_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
 luigi_left_sprites = [pygame.image.load(
-            'sprites\\luigi\\luigi-left\\luigi'+str(i+1)+'.png') for i in range(6)]
+            'sprites/luigi/luigi-left/luigi'+str(i+1)+'.png') for i in range(6)]
 luigi_left_sprites = [pygame.transform.scale(luigi_left_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
-luigi_right_jump = pygame.image.load('sprites\\luigi\\luigi-right\\luigijump.png')
+luigi_right_jump = pygame.image.load('sprites/luigi/luigi-right/luigijump.png')
 luigi_right_jump = pygame.transform.scale(luigi_right_jump,(mario_width,mario_height))
-luigi_left_jump = pygame.image.load('sprites\\luigi\\luigi-left\\luigijump.png')
+luigi_left_jump = pygame.image.load('sprites/luigi/luigi-left/luigijump.png')
 luigi_left_jump = pygame.transform.scale(luigi_left_jump,(mario_width,mario_height))
 
-
+# Mario movement parameters
 mario_max_x_vel = 500#250
 mario_y_up_accel = 500
 mario_y_down_accel = 50
@@ -44,17 +44,19 @@ mario_x_accel = 20
 num_of_marios = 200
 mario_defeat_bounce = .75
 
-
+# interactivity parameters
 player = False
-displayArena = False
+displayArena = True
 displayBest = True
 save_gens = True
 
+# engine parameters
 fps = 60
 gravity = 750
 x_vel_slow = 1 - 0.8 / fps
 x_vel_round_digit = 2
 
+# arena parameters
 arena_len = 1500
 arena_height = 700
 arena_floor = 1
@@ -72,6 +74,11 @@ ground_rect = pygame.Rect(0,
 
 background_color = (0,108,170)
 
+##################
+# Neural Network #
+##################
+
+# Neural network parameters
 num_of_input_nodes = 6 #12 if inputing velocities
 num_of_layer1_nodes = 10 #14 if inputting velocities
 num_of_layer2_nodes = 6
@@ -244,6 +251,7 @@ def mario_fight(marios):
             clock.tick(fps)
     return mario_score
 
+# Execute the neural network
 def get_move(marioID, marios):
     move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer1[marioID].dot(marios)])
     move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer2[marioID].dot(move)])
@@ -265,6 +273,7 @@ def get_move(marioID, marios):
         returnmove[1] = 1 #jump
     return returnmove
 
+# Render the mario sprites
 def display_mario(step, marioID, x, y, xvel, yvel):
     global display
     if(y != arena_floor):
@@ -280,6 +289,7 @@ def display_mario(step, marioID, x, y, xvel, yvel):
         else:
             display.blit(mario_left_sprites[step%6],(x,arena_height - y - mario_height))
 
+# Render luigi sprites
 def display_luigi(step, marioID, x, y, xvel, yvel):
     global display
     if(y != arena_floor):
@@ -295,6 +305,7 @@ def display_luigi(step, marioID, x, y, xvel, yvel):
         else:
             display.blit(luigi_left_sprites[step%6],(x,arena_height - y - mario_height))
 
+# Mutate weights in the neural network
 def mutation(best):
     global mario_nn_layer1
     global mario_nn_layer2
@@ -307,6 +318,7 @@ def mutation(best):
             if(random.random() > mutation_prob):
                 mario_nn_layer2[i][i2] = [random.random()*2 - 1 for a in range(num_of_layer1_nodes)]
 
+# Cross over weight in the neural network
 def crossover(best):
     global mario_nn_layer1
     global mario_nn_layer2
@@ -328,7 +340,7 @@ def crossover(best):
             mario_nn_layer2[i] = np.array([mario_nn_layer2[best_2[0]][c] if c < cx_point
                                     else mario_nn_layer2[best_2[1]][c] for c in range(num_of_layer2_nodes)])
 
-
+# Main computation loop
 def genetic_algorithm():
     global stop
     global displayArena
@@ -394,7 +406,7 @@ def genetic_algorithm():
         if(gen < num_of_gen):
             crossover(best)
             mutation(best)
-        path = "best_nn\\gen"+str(gen)+"\\"
+        path = "best_nn/gen"+str(gen)+"/"
         try:
             os.mkdir(path)
         except OSError:
