@@ -239,10 +239,18 @@ def mario_fight(marios):
                                 break
                         mario_y_vel[i2] = mario_y_up_accel * mario_defeat_bounce
                         mario_score[i2] += 1
-                        if(len(IDs) == 1): return mario_score
                         break
         mario_ys = new_mario_ys
-
+        if(len(IDs) == 1):
+            id = IDs[0]
+            if(displayArena == True and player == False):
+                display_mario(step, marios[id], mario_xs[id], mario_ys[id], mario_x_vel[id], mario_y_vel[id])
+            if(displayArena == True and player == True):
+                display_luigi(step, marios[id], mario_xs[id], mario_ys[id], mario_x_vel[id], mario_y_vel[id])
+            if(displayArena == True):
+                pygame.display.update()
+                clock.tick(fps)
+            return mario_score
         """
         get new moves and update display
         """
@@ -485,8 +493,6 @@ def genetic_algorithm():
                 mario_fight(best)
             else:
                 mario_fight(best[len(best)-num_of_tourn_select:len(best)])
-            display.fill(background_color)
-            pygame.draw.rect(display,ground_color,ground_rect,0)
             #player = False
             displayArena = False
         if(gen < num_of_gen):
