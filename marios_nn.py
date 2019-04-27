@@ -120,6 +120,7 @@ ground_rect = pygame.Rect(0, #ground rectangle
         ground_height)
 background_color = (0,108,170) #background color
 wall_color = (40,160,40) #background color
+wrap = True
 
 """
 pygame gui variables
@@ -171,9 +172,15 @@ def mario_fight(marios):
         if(displayArena == True):
             display.fill(background_color)
             pygame.draw.rect(display,ground_color,ground_rect,0)
-            pygame.draw.rect(display,wall_color,pygame.Rect(0,
-                    0, arena_leftwall, arena_height),0)
-            pygame.draw.rect(display,wall_color,pygame.Rect(arena_rightwall+mario_width,
+            if(wrap == False):
+                pygame.draw.rect(display,wall_color,pygame.Rect(0,
+                        0, arena_leftwall, arena_height),0)
+                pygame.draw.rect(display,wall_color,pygame.Rect(arena_rightwall+mario_width,
+                    0, 1000, arena_height),0)
+            elif(wrap == True):
+                pygame.draw.rect(display,(0,0,0),pygame.Rect(0,
+                        0, arena_leftwall, arena_height),0)
+                pygame.draw.rect(display,(0,0,0),pygame.Rect(arena_rightwall,
                     0, 1000, arena_height),0)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -206,12 +213,18 @@ def mario_fight(marios):
             mario_x_vel[i] = round(mario_x_vel[i] * x_vel_slow , x_vel_round_digit)
             if(mario_ys[i] != 0):
                 mario_y_vel[i] -= gravity/fps
-            if(mario_xs[i] < arena_leftwall):
-                mario_xs[i] = arena_leftwall
-                mario_x_vel[i] = -1
-            elif(mario_xs[i] > arena_rightwall):
-                mario_xs[i] = arena_rightwall
-                mario_x_vel[i] = 1
+            if(wrap):
+                if(mario_xs[i] - mario_width < arena_leftwall):
+                    mario_xs[i] = arena_rightwall - 1
+                elif(mario_xs[i] > arena_rightwall):
+                    mario_xs[i] = arena_leftwall - mario_width + 1
+            else:
+                if(mario_xs[i] < arena_leftwall):
+                    mario_xs[i] = arena_leftwall
+                    mario_x_vel[i] = -1
+                elif(mario_xs[i] > arena_rightwall):
+                    mario_xs[i] = arena_rightwall
+                    mario_x_vel[i] = 1
             if(new_mario_ys[i] < arena_floor):
                 new_mario_ys[i] = arena_floor
                 mario_y_vel[i] = 0
@@ -439,6 +452,7 @@ def genetic_algorithm():
     global arena_len
     global arena_rightwall
     global arena_leftwall
+    global wrap
     path = "best_nn"
     """
     make output data directory
@@ -455,10 +469,10 @@ def genetic_algorithm():
         """
         randomize arena size for generation
         """
-        rand = (arena_len - random.randint(700,1480))/2
+        rand = (arena_len - random.randint(700,1400))/2
         arena_rightwall = arena_len - rand - mario_width
         arena_leftwall = rand
-
+        wrap = random.randint(0,1) == 1
         """
         check if pygame gui closed
         """
