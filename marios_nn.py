@@ -340,22 +340,31 @@ def get_move(marioID, marios):
     return returnmove
 
 """
+image tinting
+"""
+def tint(image, marioID):
+    image = image.copy()
+    mod = marioID/num_of_marios*100
+    image.fill((mod, mod, mod, 100), special_flags=pygame.BLEND_SUB)
+    return image
+
+"""
 display the mario sprite
 """
 def display_mario(step, marioID, x, y, xvel, yvel):
     global display
     if(y != arena_floor):
         if(xvel >= 0):
-            display.blit(mario_right_jump,(x,arena_height - y - mario_height))
+            display.blit(tint(mario_right_jump,marioID),(x,arena_height - y - mario_height))
         else:
-            display.blit(mario_left_jump,(x,arena_height - y - mario_height))
+            display.blit(tint(mario_left_jump,marioID),(x,arena_height - y - mario_height))
     else:
         if(round(xvel) == 0):
-            display.blit(mario_right_sprites[0],(x,arena_height - y - mario_height))
+            display.blit(tint(mario_right_sprites[0],marioID),(x,arena_height - y - mario_height))
         elif(xvel > 0):
-            display.blit(mario_right_sprites[step%6],(x,arena_height - y - mario_height))
+            display.blit(tint(mario_right_sprites[step%6],marioID),(x,arena_height - y - mario_height))
         else:
-            display.blit(mario_left_sprites[step%6],(x,arena_height - y - mario_height))
+            display.blit(tint(mario_left_sprites[step%6],marioID),(x,arena_height - y - mario_height))
 
 """
 display the luigi sprite
