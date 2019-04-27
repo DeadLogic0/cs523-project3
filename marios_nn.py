@@ -25,28 +25,28 @@ mario_width = 42
 Mario and Luigi sprite loading and resizing to mario_heigth and mario_width
 """
 mario_right_sprites = [pygame.image.load(
-            'sprites\\mario\\mario-right\\mario'+str(i+1)+'.png') for i in range(6)]
+            'sprites/mario/mario-right/mario'+str(i+1)+'.png') for i in range(6)]
 mario_right_sprites = [pygame.transform.scale(mario_right_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
 mario_left_sprites = [pygame.image.load(
-            'sprites\\mario\\mario-left\\mario'+str(i+1)+'.png') for i in range(6)]
+            'sprites/mario/mario-left/mario'+str(i+1)+'.png') for i in range(6)]
 mario_left_sprites = [pygame.transform.scale(mario_left_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
-mario_right_jump = pygame.image.load('sprites\\mario\\mario-right\\mariojump.png')
+mario_right_jump = pygame.image.load('sprites/mario/mario-right/mariojump.png')
 mario_right_jump = pygame.transform.scale(mario_right_jump,(mario_width,mario_height))
-mario_left_jump = pygame.image.load('sprites\\mario\\mario-left\\mariojump.png')
+mario_left_jump = pygame.image.load('sprites/mario/mario-left/mariojump.png')
 mario_left_jump = pygame.transform.scale(mario_left_jump,(mario_width,mario_height))
 luigi_right_sprites = [pygame.image.load(
-            'sprites\\luigi\\luigi-right\\luigi'+str(i+1)+'.png') for i in range(6)]
+            'sprites/luigi/luigi-right/luigi'+str(i+1)+'.png') for i in range(6)]
 luigi_right_sprites = [pygame.transform.scale(luigi_right_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
 luigi_left_sprites = [pygame.image.load(
-            'sprites\\luigi\\luigi-left\\luigi'+str(i+1)+'.png') for i in range(6)]
+            'sprites/luigi/luigi-left/luigi'+str(i+1)+'.png') for i in range(6)]
 luigi_left_sprites = [pygame.transform.scale(luigi_left_sprites[i],
                         (mario_width,mario_height)) for i in range(6)]
-luigi_right_jump = pygame.image.load('sprites\\luigi\\luigi-right\\luigijump.png')
+luigi_right_jump = pygame.image.load('sprites/luigi/luigi-right/luigijump.png')
 luigi_right_jump = pygame.transform.scale(luigi_right_jump,(mario_width,mario_height))
-luigi_left_jump = pygame.image.load('sprites\\luigi\\luigi-left\\luigijump.png')
+luigi_left_jump = pygame.image.load('sprites/luigi/luigi-left/luigijump.png')
 luigi_left_jump = pygame.transform.scale(luigi_left_jump,(mario_width,mario_height))
 
 """
