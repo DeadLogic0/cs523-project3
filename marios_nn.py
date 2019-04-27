@@ -103,7 +103,7 @@ mario_fight variables
 fps = 30 #fps of the mario fight, if under ~15 the collision detection wont work properly
 gravity = 750 #gravity value
 x_vel_slow = 1 - 0.8 / fps #slow applied to mario x velocity each frame
-x_vel_round_digit = 2 #x velocity rounded to x_vel_round_digit's
+x_vel_round_digit = 1 #x velocity rounded to x_vel_round_digit's
 arena_len = 1500 #length of screen and max possible arena length
 arena_height = 700 #screen height - ground_height
 arena_floor = 1 #position of arena floor, 0 is reserved for instances where there are only two marios
@@ -345,7 +345,9 @@ image tinting
 def tint(image, marioID):
     image = image.copy()
     mod = marioID/num_of_marios*100
-    image.fill((mod, mod, mod, 100), special_flags=pygame.BLEND_SUB)
+    image.fill((mod*(1 if marioID%2 else 0),
+            mod*(1 if marioID%3 else 0),
+            mod*(1 if marioID%5 else 0), 100), special_flags=pygame.BLEND_SUB)
     return image
 
 """
@@ -496,12 +498,15 @@ def genetic_algorithm():
         print(str(gen)+"              "+str(len(best)))
         if(displayBest == True):
             displayArena = True
-            arena_max_duration = 750
+            arena_max_duration = 1500
             #player = True
+            fps = 60
             if(len(best) < num_of_tourn_select):
                 mario_fight(best)
             else:
                 mario_fight(best[len(best)-num_of_tourn_select:len(best)])
+            fps = 30
+            arena_max_duration = 750
             #player = False
             displayArena = False
         if(gen < num_of_gen):
