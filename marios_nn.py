@@ -134,7 +134,7 @@ load previous generation
 """
 def load_gen(gen, num_of_marios):
     global mario_nn_layer1
-    path = "best_nn\\gen"+str(gen)+"\\"
+    path = "best_nn/gen"+str(gen)+"/"
     for i in range(num_of_marios):
         mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
 
@@ -493,7 +493,7 @@ def genetic_algorithm():
         """
         save the neural networks to output directory
         """
-        path = "best_nn\\gen"+str(gen)+"\\"
+        path = "best_nn/gen"+str(gen)+"/"
         try:
             os.mkdir(path)
         except OSError:
