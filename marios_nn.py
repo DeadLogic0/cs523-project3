@@ -108,7 +108,7 @@ arena_len = 1500 #length of screen and max possible arena length
 arena_height = 700 #screen height - ground_height
 arena_floor = 1 #position of arena floor, 0 is reserved for instances where there are only two marios
 arena_leftwall = 40 #x coordinate of left wall
-arena_rightwall = arena_len - mario_width #x coordinate of right wall
+arena_rightwall = arena_len - mario_width - arena_leftwall #x coordinate of right wall
 arena_max_duration = 1500 #max mario_fight duration
 arena_move_polling_rate = 5 #marios choose a new move every arena_move_polling_rate frames
 ground_height = 40 #height of rect representing the ground
@@ -120,7 +120,8 @@ ground_rect = pygame.Rect(0, #ground rectangle
         ground_height)
 background_color = (0,108,170) #background color
 wall_color = (40,160,40) #background color
-wrap = True
+wrap = False
+wall_deadly = True
 
 """
 pygame gui variables
@@ -161,6 +162,7 @@ def mario_fight(marios):
     mario_y_vel = np.array([0]*num_of_marios_fighting, dtype=np.float)
     mario_status = np.array([True]*num_of_marios_fighting)
     mario_score = np.array([0]*num_of_marios_fighting)
+    mario_survival = np.array([0]*num_of_marios_fighting)
     IDs = [n for n in range(num_of_marios_fighting)]
 
     playerxmod = 0 #player controls variable
@@ -219,12 +221,26 @@ def mario_fight(marios):
                 elif(mario_xs[i] > arena_rightwall):
                     mario_xs[i] = arena_leftwall - mario_width + 1
             else:
-                if(mario_xs[i] < arena_leftwall):
-                    mario_xs[i] = arena_leftwall
-                    mario_x_vel[i] = -1
-                elif(mario_xs[i] > arena_rightwall):
-                    mario_xs[i] = arena_rightwall
-                    mario_x_vel[i] = 1
+                if(wall_deadly == False):
+                    if(mario_xs[i] < arena_leftwall):
+                        mario_xs[i] = arena_leftwall
+                        mario_x_vel[i] = -1
+                    elif(mario_xs[i] > arena_rightwall):
+                        mario_xs[i] = arena_rightwall
+                        mario_x_vel[i] = 1
+                else:
+                    if(mario_xs[i] < arena_leftwall):
+                        mario_survival[i] = step/arena_max_duration
+                        for a in range(len(IDs)):
+                            if(IDs[a] == i):
+                                IDs = np.delete(IDs,a)
+                                break
+                    elif(mario_xs[i] > arena_rightwall):
+                        mario_survival[i] = step/arena_max_duration
+                        for a in range(len(IDs)):
+                            if(IDs[a] == i):
+                                IDs = np.delete(IDs,a)
+                                break
             if(new_mario_ys[i] < arena_floor):
                 new_mario_ys[i] = arena_floor
                 mario_y_vel[i] = 0
@@ -246,6 +262,7 @@ def mario_fight(marios):
                             new_mario_ys[i2] > mario_y and
                             mario_ys[i2] > mario_ys[i] + mario_height ):
                         mario_status[i] = False
+                        mario_survival[i] = step/arena_max_duration
                         for a in range(len(IDs)):
                             if(IDs[a] == i):
                                 IDs = np.delete(IDs,a)
@@ -254,6 +271,10 @@ def mario_fight(marios):
                         mario_score[i2] += 1
                         break
         mario_ys = new_mario_ys
+        if(len(IDs) == 0):
+            if(np.sum(mario_score) == 0):
+                return mario_score
+            return mario_survival
         if(len(IDs) == 1):
             id = IDs[0]
             if(displayArena == True and player == False):
@@ -469,10 +490,11 @@ def genetic_algorithm():
         """
         randomize arena size for generation
         """
-        rand = (arena_len - random.randint(700,1400))/2
-        arena_rightwall = arena_len - rand - mario_width
-        arena_leftwall = rand
-        wrap = random.randint(0,1) == 1
+        if(wall_deadly == False):
+            rand = (arena_len - random.randint(700,1400))/2
+            arena_rightwall = arena_len - rand - mario_width
+            arena_leftwall = rand
+            wrap = random.randint(0,1) == 1
         """
         check if pygame gui closed
         """
