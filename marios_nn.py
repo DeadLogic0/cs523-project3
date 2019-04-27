@@ -76,8 +76,8 @@ num_of_gen = 100 #number of generations
 Mario neural network variables
 """
 
-num_of_input_nodes = 12 #12 if inputing velocities
-num_of_layer1_nodes = 6 #number of output nodes
+num_of_input_nodes = 14
+num_of_layer1_nodes = 6
 mario_nn_layer1 = np.array([[[random.random()*2 - 1 for i in range(num_of_input_nodes)]
                                 for i2 in range(num_of_layer1_nodes)]
                                     for i3 in range(num_of_marios)])
@@ -103,7 +103,7 @@ mario_fight variables
 fps = 30 #fps of the mario fight, if under ~15 the collision detection wont work properly
 gravity = 750 #gravity value
 x_vel_slow = 1 - 0.8 / fps #slow applied to mario x velocity each frame
-x_vel_round_digit = 1 #x velocity rounded to x_vel_round_digit's
+x_vel_round_digit = 0 #x velocity rounded to x_vel_round_digit's
 arena_len = 1500 #length of screen and max possible arena length
 arena_height = 700 #screen height - ground_height
 arena_floor = 1 #position of arena floor, 0 is reserved for instances where there are only two marios
@@ -120,8 +120,10 @@ ground_rect = pygame.Rect(0, #ground rectangle
         ground_height)
 background_color = (0,108,170) #background color
 wall_color = (40,160,40) #background color
+random_wrap = False
 wrap = False
 wall_deadly = True
+random_arena_size = False
 
 """
 pygame gui variables
@@ -162,7 +164,7 @@ def mario_fight(marios):
     mario_y_vel = np.array([0]*num_of_marios_fighting, dtype=np.float)
     mario_status = np.array([True]*num_of_marios_fighting)
     mario_score = np.array([0]*num_of_marios_fighting)
-    mario_survival = np.array([0]*num_of_marios_fighting)
+    mario_survival = np.array([0]*num_of_marios_fighting, dtype=np.float)
     IDs = [n for n in range(num_of_marios_fighting)]
 
     playerxmod = 0 #player controls variable
@@ -273,8 +275,10 @@ def mario_fight(marios):
         mario_ys = new_mario_ys
         if(len(IDs) == 0):
             if(np.sum(mario_score) == 0):
+                # mario_score = np.array([mario_score[i]*mario_score[i]*mario_survival[i] for i in
+                #         range(num_of_marios_fighting) ], dtype=np.float)
                 return mario_score
-            return mario_survival
+            return mario_score
         if(len(IDs) == 1):
             id = IDs[0]
             if(displayArena == True and player == False):
@@ -284,6 +288,8 @@ def mario_fight(marios):
             if(displayArena == True):
                 pygame.display.update()
                 clock.tick(fps)
+            # mario_score = np.array([mario_score[i]*mario_score[i]*mario_survival[i] for i in
+            #         range(num_of_marios_fighting) ], dtype=np.float)
             return mario_score
         """
         get new moves and update display
@@ -294,28 +300,19 @@ def mario_fight(marios):
             if(id == 0 and player == True): continue
             if(step % arena_move_polling_rate != 0):
                 0
-            # elif(i == 0):
-            #     xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
-            #                             mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
-            #                             0                   ,     0]))
-            # elif(i == len(ID) - 1):
-            #     xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
-            #                              0                   ,     0 ,
-            #                             mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
-            # else:
-            #     xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ],
-            #                                       mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ],
-            #                                       mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ]]))
             elif(i == 0):#used for inputting velocities but ai wouldnt train fast enough
-                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
+                xmod,ymod = get_move(marios[id] , np.array([arena_leftwall, arena_rightwall,
+                                        mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
                                         mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ], mario_x_vel[ ID[i+1] ], mario_y_vel[ ID[i+1] ],
                                         0                   ,     0              ,        0              ,            0]))
             elif(i == len(ID) - 1):
-                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
+                xmod,ymod = get_move(marios[id] , np.array([arena_leftwall, arena_rightwall,
+                                        mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
                                          0                   ,     0            ,    0     ,         0,
                                         mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ], mario_x_vel[ ID[i-1] ], mario_y_vel[ ID[i-1] ]]))
             else:
-                xmod,ymod = get_move(marios[id] , np.array([mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
+                xmod,ymod = get_move(marios[id] , np.array([arena_leftwall, arena_rightwall,
+                                                  mario_xs[ id ]   , mario_ys[ id ], mario_x_vel[id], mario_y_vel[id],
                                                   mario_xs[ ID[i+1] ] , mario_ys[ ID[i+1] ], mario_x_vel[ ID[i+1] ], mario_y_vel[ ID[i+1] ],
                                                   mario_xs[ ID[i-1] ] , mario_ys[ ID[i-1] ], mario_x_vel[ ID[i-1] ], mario_y_vel[ ID[i-1] ]]))
             mario_x_vel[id] += xmod*mario_x_accel
@@ -445,20 +442,11 @@ def crossover(best):
         if(random.random() < crossover_probability):
             r = random.sample(best,1)[0]
             mario_nn_layer1[i] = np.copy(mario_nn_layer1[r])
-            # mario_nn_layer2[i] = np.copy(mario_nn_layer2[r])
             continue
         best_2 = random.sample(best,2)
         cx_point = random.randint(1,num_of_layer1_nodes-2)
         mario_nn_layer1[i] = np.array([mario_nn_layer1[best_2[0]][c] if c < cx_point
                                 else mario_nn_layer1[best_2[1]][c] for c in range(num_of_layer1_nodes)])
-        # if(cx_point < num_of_layer1_nodes):
-        #     mario_nn_layer1[i] = np.array([mario_nn_layer1[best_2[0]][c] if c < cx_point
-        #                             else mario_nn_layer1[best_2[1]][c] for c in range(num_of_layer1_nodes)])
-        #     mario_nn_layer2[i] = np.copy(mario_nn_layer2[best_2[1]])
-        # else:
-        #     mario_nn_layer1[i] = np.copy(mario_nn_layer1[best_2[1]])
-        #     mario_nn_layer2[i] = np.array([mario_nn_layer2[best_2[0]][c] if c < cx_point
-        #                             else mario_nn_layer2[best_2[1]][c] for c in range(num_of_layer2_nodes)])
 
 """
 genetic algorithm
@@ -488,13 +476,14 @@ def genetic_algorithm():
     print("Gen         Num_Of_Unique_Marios")
     for gen in range(num_of_gen+1):
         """
-        randomize arena size for generation
+        randomize arena parameters for generation
         """
-        if(wall_deadly == False):
+        if(random_wrap):
+            wrap = random.randint(0,1) == 1
+        if(random_arena_size):
             rand = (arena_len - random.randint(700,1400))/2
             arena_rightwall = arena_len - rand - mario_width
             arena_leftwall = rand
-            wrap = random.randint(0,1) == 1
         """
         check if pygame gui closed
         """
@@ -507,7 +496,7 @@ def genetic_algorithm():
         scores = [0]*num_of_best_to_select
         for i in range(num_of_best_to_select):
             ids = [a for a in range(num_of_tourn_select)]
-            results = np.array([0]*num_of_tourn_select)
+            results = np.array([0]*num_of_tourn_select, dtype=np.float)
             random_marios = random.sample(range(0,num_of_marios),num_of_tourn_select)
             for a in range(num_of_matches):
                 if(stop == True): break
