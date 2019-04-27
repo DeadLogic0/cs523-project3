@@ -1,3 +1,9 @@
+"""
+UNM CS523 Spring 2019
+Project 3
+Author: Nicholas Barrett
+"""
+
 from __future__ import division
 import numpy as np
 import random
@@ -123,7 +129,14 @@ clock = pygame.time.Clock()
 display = pygame.display.set_mode((arena_len,arena_height+ground_height))
 pygame.display.set_caption('marios')
 
-
+"""
+load previous generation
+"""
+def load_gen(gen, num_of_marios):
+    global mario_nn_layer1
+    path = "best_nn\\gen"+str(gen)+"\\"
+    for i in range(num_of_marios):
+        mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
 
 """
 mario fight match
@@ -464,7 +477,6 @@ def genetic_algorithm():
         if(displayBest == True):
             displayArena = True
             arena_max_duration = 750
-            arena_move_polling_rate = 3
             #player = True
             if(len(best) < num_of_tourn_select):
                 mario_fight(best)
@@ -489,10 +501,14 @@ def genetic_algorithm():
         else:
             0
         if(save_gens == True):
-            for i in range(len(best)):
+            for i in range(len(best)-1,-1,-1):
                 np.savetxt(path+file_names+str(i)+'_1.dat',mario_nn_layer1[best[0]])
 
 def main():
+    # global displayArena
+    # load_gen(5,num_of_tourn_select)
+    # displayArena = True
+    # mario_fight([a for a in range(num_of_tourn_select)])
     genetic_algorithm()
     pygame.quit()
 
