@@ -179,7 +179,7 @@ def mario_fight(marios):
                     0, 1000, arena_height),0)
             elif(wrap == True):
                 pygame.draw.rect(display,(0,0,0),pygame.Rect(0,
-                        0, arena_leftwall, arena_height),0)
+                        0, arena_leftwall+mario_width, arena_height),0)
                 pygame.draw.rect(display,(0,0,0),pygame.Rect(arena_rightwall,
                     0, 1000, arena_height),0)
         for event in pygame.event.get():
