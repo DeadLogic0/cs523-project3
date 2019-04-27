@@ -63,6 +63,7 @@ Genetic Algorithm variables
 """
 num_of_marios = 150 #number of marios each gen
 num_of_mutations = 2 #number of mutations applied to each new neural network
+num_of_mutations_per_node = 3 #total mutations - num_of_mutations*num_of_mutations_per_node
 crossover_probability = 0.4 #probability of crossover
 num_of_tourn_select = 8 #number of marios randomly selected to participate in each tournament
 num_of_matches = 3 #number of matches in a tournament
@@ -374,9 +375,11 @@ def mutation(best):
     global mario_nn_layer2
     for i in range(num_of_marios):
         if(i in best): continue
-        for i in range(num_of_mutations):
-            mario_nn_layer1[i][random.randint(0,num_of_layer1_nodes-1)] = [
-                            random.random()*2 - 1 for a in range(num_of_input_nodes)]
+        for i2 in range(num_of_mutations):
+            ind = random.randint(0,num_of_layer1_nodes-1)
+            for i3 in range(num_of_mutations_per_node):
+                mario_nn_layer1[i][ind][random.randint(0,
+                    num_of_input_nodes-1)] = random.random()*2 - 1
 
 """
 perform crossover on any mario neural network not in best
