@@ -112,7 +112,7 @@ arena_rightwall = arena_len - mario_width - arena_leftwall #x coordinate of righ
 arena_max_duration = 1500 #max mario_fight duration
 arena_move_polling_rate = 5 #marios choose a new move every arena_move_polling_rate frames
 ground_height = 40 #height of rect representing the ground
-random_y_max = mario_height*2 #random y max position
+random_y_max = mario_height-1 #random y max position
 ground_color = (139,69,19) #color of the ground
 ground_rect = pygame.Rect(0, #ground rectangle
         arena_height,
