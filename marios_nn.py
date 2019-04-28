@@ -54,7 +54,7 @@ Mario movement characteristic variables
 """
 mario_max_x_vel = 500 #max x velocity
 mario_y_up_accel = 500 #jump veloctiy
-mario_y_down_accel = 50 #down acceleration
+mario_y_down_accel = 10 #down acceleration
 mario_x_accel = 20 #x acceleration
 mario_defeat_bounce = .75 #bounce velecity = mario_defeat_bounce * mario_y_up_accel
 
