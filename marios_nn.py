@@ -125,7 +125,7 @@ wall_death_weight = -2
 wall_collision_weight = -.1
 wrap = False
 wall_deadly = False
-random_arena_size = False
+random_arena_size = True
 
 """
 pygame gui variables
