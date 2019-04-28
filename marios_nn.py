@@ -121,8 +121,10 @@ ground_rect = pygame.Rect(0, #ground rectangle
 background_color = (0,108,170) #background color
 wall_color = (40,160,40) #background color
 random_wrap = False
+wall_death_weight = -2
+wall_collision_weight = -.1
 wrap = False
-wall_deadly = True
+wall_deadly = False
 random_arena_size = False
 
 """
@@ -163,7 +165,7 @@ def mario_fight(marios):
     mario_x_vel = np.array([0]*num_of_marios_fighting, dtype=np.float)
     mario_y_vel = np.array([0]*num_of_marios_fighting, dtype=np.float)
     mario_status = np.array([True]*num_of_marios_fighting)
-    mario_score = np.array([0]*num_of_marios_fighting)
+    mario_score = np.array([0]*num_of_marios_fighting,dtype=np.float)
     mario_survival = np.array([0]*num_of_marios_fighting, dtype=np.float)
     IDs = [n for n in range(num_of_marios_fighting)]
 
@@ -226,19 +228,23 @@ def mario_fight(marios):
                 if(wall_deadly == False):
                     if(mario_xs[i] < arena_leftwall):
                         mario_xs[i] = arena_leftwall
+                        mario_score[i] += wall_collision_weight
                         mario_x_vel[i] = -1
                     elif(mario_xs[i] > arena_rightwall):
                         mario_xs[i] = arena_rightwall
+                        mario_score[i] += wall_collision_weight
                         mario_x_vel[i] = 1
                 else:
                     if(mario_xs[i] < arena_leftwall):
                         mario_survival[i] = step/arena_max_duration
+                        mario_score[i] += wall_death_weight
                         for a in range(len(IDs)):
                             if(IDs[a] == i):
                                 IDs = np.delete(IDs,a)
                                 break
                     elif(mario_xs[i] > arena_rightwall):
                         mario_survival[i] = step/arena_max_duration
+                        mario_score[i] += wall_death_weight
                         for a in range(len(IDs)):
                             if(IDs[a] == i):
                                 IDs = np.delete(IDs,a)
@@ -540,7 +546,6 @@ def genetic_algorithm():
             displayArena = True
             arena_max_duration = 1500
             # player = True
-            fps = 60
             if(player != True):
                 if(len(best) < num_of_tourn_select):
                     mario_fight(best)
@@ -551,7 +556,6 @@ def genetic_algorithm():
                     mario_fight([-1]+best)
                 else:
                     mario_fight([-1]+best[len(best)-num_of_tourn_select:len(best)])
-            fps = 30
             arena_max_duration = 750
             # player = False
             displayArena = False
