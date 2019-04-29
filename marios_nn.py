@@ -574,7 +574,7 @@ def genetic_algorithm():
         else:
             0
         if(save_gens == True):
-            for i in range(len(best)-1,-1,-1):
+            for i in range(len(best)-1,-1,len(best)-num_of_tourn_select):
                 np.savetxt(path+file_names+str(i)+'_1.dat',mario_nn_layer1[best[0]])
 
 def main():
