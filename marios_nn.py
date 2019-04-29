@@ -90,11 +90,12 @@ Data Output Variables and PVE variable
 #the lone mario on the feild using the up,down,left,right controls
 player = False
 displayArena = False #if displayArena = True the current mario_fight will be displayed
-displayBest = True #if displayBest = True the best of the generation will be displayed fighting
+displayBest = False #if displayBest = True the best of the generation will be displayed fighting
 #if save_gens = True the neural network weights will be outputted to a .dat file
 #using the file_names variable from below
-save_gens = False
+save_gens = True
 file_names = "best" #"file_names"+"mario Index"+"neural network layer"+".dat"
+directory = "best_nn"
 
 
 """
@@ -121,7 +122,7 @@ ground_rect = pygame.Rect(0, #ground rectangle
 background_color = (0,108,170) #background color
 wall_color = (40,160,40) #background color
 random_wrap = False
-wall_death_weight = -2
+wall_death_weight = -1 * num_of_tourn_select
 wall_collision_weight = -.1
 wrap = False
 wall_deadly = False
@@ -136,14 +137,7 @@ clock = pygame.time.Clock()
 display = pygame.display.set_mode((arena_len,arena_height+ground_height))
 pygame.display.set_caption('marios')
 
-"""
-load previous generation
-"""
-def load_gen(gen, num_of_marios):
-    global mario_nn_layer1
-    path = "best_nn/gen"+str(gen)+"/"
-    for i in range(num_of_marios):
-        mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
+
 
 """
 mario fight match
@@ -238,6 +232,7 @@ def mario_fight(marios):
                     if(mario_xs[i] < arena_leftwall):
                         mario_survival[i] = step/arena_max_duration
                         mario_score[i] += wall_death_weight
+                        mario_status[i] = False
                         for a in range(len(IDs)):
                             if(IDs[a] == i):
                                 IDs = np.delete(IDs,a)
@@ -245,6 +240,7 @@ def mario_fight(marios):
                     elif(mario_xs[i] > arena_rightwall):
                         mario_survival[i] = step/arena_max_duration
                         mario_score[i] += wall_death_weight
+                        mario_status[i] = False
                         for a in range(len(IDs)):
                             if(IDs[a] == i):
                                 IDs = np.delete(IDs,a)
@@ -483,7 +479,7 @@ def genetic_algorithm():
     global arena_rightwall
     global arena_leftwall
     global wrap
-    path = "best_nn"
+    path = directory
     """
     make output data directory
     """
@@ -566,17 +562,25 @@ def genetic_algorithm():
         """
         save the neural networks to output directory
         """
-        path = "best_nn/gen"+str(gen)+"/"
         if(save_gens == True):
             try:
-                os.mkdir(path)
+                os.mkdir(directory+"/gen"+str(gen)+"/")
             except OSError:
                 0
             else:
                 0
             ind = [a for a in range(len(best)-1,len(best)-num_of_tourn_select-1,-1)]
             for i in range(0,num_of_tourn_select):
-                np.savetxt(path+file_names+str(i)+'_1.dat',mario_nn_layer1[best[ind[i]]])
+                np.savetxt(directory+"/gen"+str(gen)+"/"+file_names+str(i)+'_1.dat',mario_nn_layer1[best[ind[i]]])
+
+"""
+load previous generation
+"""
+def load_gen(gen, num_of_marios):
+    global mario_nn_layer1
+    path = directory+"/gen"+str(gen)+"/"
+    for i in range(num_of_marios):
+        mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
 
 def replay_last_GA():
     global displayArena
@@ -589,27 +593,27 @@ def replay_last_GA():
 
 def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
     global mario_nn_layer1
-    path = "best_nn/gen"+str(gen1)+"/"
+    path = directory+"/gen"+str(gen1)+"/"
     for i in range(numofgen1):
         mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
-    path = "best_nn/gen"+str(gen2)+"/"
+    path = directory+"/gen"+str(gen2)+"/"
     for i in range(numofgen1,numofgen2):
         mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i-numofgen1)+"_1.dat")
 
     ids = [a for a in range(numofgen1+numofgen2)]
     results = np.array([0]*(numofgen1+numofgen2), dtype=np.float)
     random_marios = [a for a in range(numofgen1+numofgen2)]
-    for a in range(10):
+    for a in range(100):
         if(stop == True): break
         result = mario_fight([random_marios[id] for id in ids])
         ids , result = (list(l) for l in zip(*sorted(zip(ids , result))))
         results += result
         random.shuffle(ids)
-    return results/10
+    return results/100
 
 def gen_against_gens_stats(gen):
     global wall_collision_weight
-    # wall_collision_weight = 0
+    wall_collision_weight = 0
     numofevalgen = 8
     numofoppgen = 8
     print("Eval_GEN    Opp_GEN      Fit_Diff")
@@ -622,24 +626,28 @@ def gen_against_gens_stats(gen):
 def fitness_all_gen():
     global displayArena
     global arena_max_duration
+    global wall_collision_weight
+    wall_collision_weight = -0.1
     displayArena = False
     arena_max_duration = 450
-    print("GEN         FIT")
+    print("GEN         FIT      STD_DEV     MIN     MAX")
     for i in range(0,101):
         load_gen(i,num_of_tourn_select)
         ids = [a for a in range(num_of_tourn_select)]
         results = np.array([0]*(num_of_tourn_select), dtype=np.float)
         random_marios = [a for a in range(num_of_tourn_select)]
-        for a in range(10):
+        for a in range(100):
             if(stop == True): break
             result = mario_fight([random_marios[id] for id in ids])
             ids , result = (list(l) for l in zip(*sorted(zip(ids , result))))
             results += result
             random.shuffle(ids)
-        print(str(i)+"        "+str(round(np.mean(results/10),2)))
+        print(str(i)+"        "+str(round(np.mean(results/100),2))+
+            "        "+str(round(np.std(results/100),2))+"        "+str(round(min(results/100),2))
+            +"        "+str(round(max(results/100),2)))
 
 def main():
-    gen_against_gens_stats(100)
+    # gen_against_gens_stats(100)
     print("All gen fitness\n\n\n\n")
     fitness_all_gen()
     # replay_last_GA()
