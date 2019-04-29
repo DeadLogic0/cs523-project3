@@ -66,7 +66,7 @@ num_of_mutations = 2 #number of mutations applied to each new neural network
 num_of_mutations_per_node = 3 #total mutations - num_of_mutations*num_of_mutations_per_node
 crossover_probability = 0.4 #probability of crossover
 num_of_tourn_select = 8 #number of marios randomly selected to participate in each tournament
-num_of_matches = 3 #number of matches in a tournament
+num_of_matches = 15 #number of matches in a tournament
 #number of best marios selected each generation, duplicates and 0 fitness removed after selection
 num_of_best_to_select = 30 #^^^
 num_of_gen = 100 #number of generations
@@ -95,7 +95,7 @@ displayBest = False #if displayBest = True the best of the generation will be di
 #using the file_names variable from below
 save_gens = True
 file_names = "best" #"file_names"+"mario Index"+"neural network layer"+".dat"
-directory = "best_nn"
+directory = "best_nn2"
 
 
 """
@@ -110,7 +110,7 @@ arena_height = 700 #screen height - ground_height
 arena_floor = 1 #position of arena floor, 0 is reserved for instances where there are only two marios
 arena_leftwall = 40 #x coordinate of left wall
 arena_rightwall = arena_len - mario_width - arena_leftwall #x coordinate of right wall
-arena_max_duration = 1500 #max mario_fight duration
+arena_max_duration = 500 #max mario_fight duration
 arena_move_polling_rate = 5 #marios choose a new move every arena_move_polling_rate frames
 ground_height = 40 #height of rect representing the ground
 random_y_max = mario_height-1 #random y max position
@@ -647,7 +647,7 @@ def fitness_all_gen():
             +"        "+str(round(max(results/100),2)))
 
 def main():
-    # gen_against_gens_stats(100)
+    gen_against_gens_stats(100)
     print("All gen fitness\n\n\n\n")
     fitness_all_gen()
     # replay_last_GA()
