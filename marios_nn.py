@@ -587,8 +587,62 @@ def replay_last_GA():
         load_gen(i,num_of_tourn_select)
         mario_fight([a for a in range(num_of_tourn_select)])
 
+def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
+    global mario_nn_layer1
+    path = "best_nn/gen"+str(gen1)+"/"
+    for i in range(numofgen1):
+        mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
+    path = "best_nn/gen"+str(gen2)+"/"
+    for i in range(numofgen1,numofgen2):
+        mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i-numofgen1)+"_1.dat")
+
+    ids = [a for a in range(numofgen1+numofgen2)]
+    results = np.array([0]*(numofgen1+numofgen2), dtype=np.float)
+    random_marios = [a for a in range(numofgen1+numofgen2)]
+    for a in range(10):
+        if(stop == True): break
+        result = mario_fight([random_marios[id] for id in ids])
+        ids , result = (list(l) for l in zip(*sorted(zip(ids , result))))
+        results += result
+        random.shuffle(ids)
+    return results/10
+
+def gen_against_gens_stats(gen):
+    global wall_collision_weight
+    # wall_collision_weight = 0
+    numofevalgen = 8
+    numofoppgen = 8
+    print("Eval_GEN    Opp_GEN      Fit_Diff")
+    for i in range(num_of_gen+1):
+        if(i == gen): continue
+        fit = fight_gen_against_gen(100,numofevalgen,i,numofoppgen)
+        print(str(gen)+"            "+str(i)+"            "+str(round(np.mean(fit[0:numofevalgen])-
+                np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
+
+def fitness_all_gen():
+    global displayArena
+    global arena_max_duration
+    displayArena = False
+    arena_max_duration = 450
+    print("GEN         FIT")
+    for i in range(0,101):
+        load_gen(i,num_of_tourn_select)
+        ids = [a for a in range(num_of_tourn_select)]
+        results = np.array([0]*(num_of_tourn_select), dtype=np.float)
+        random_marios = [a for a in range(num_of_tourn_select)]
+        for a in range(10):
+            if(stop == True): break
+            result = mario_fight([random_marios[id] for id in ids])
+            ids , result = (list(l) for l in zip(*sorted(zip(ids , result))))
+            results += result
+            random.shuffle(ids)
+        print(str(i)+"        "+str(round(np.mean(results/10),2)))
+
 def main():
-    replay_last_GA()
+    gen_against_gens_stats(100)
+    print("All gen fitness\n\n\n\n")
+    fitness_all_gen()
+    # replay_last_GA()
     # global displayArena
     # load_gen(5,num_of_tourn_select)
     # displayArena = True
