@@ -156,7 +156,7 @@ def mario_fight(marios):
     game variables
     """
     num_of_marios_fighting = len(marios);
-    arena_spacing = arena_rightwall/(num_of_marios_fighting-1)
+    arena_spacing = (arena_rightwall - arena_leftwall)/(num_of_marios_fighting-1)
     arena_spacing -= random.randint(0,math.floor(arena_spacing/2))
     mario_xs = np.array([arena_leftwall+i*arena_spacing for
             i in range(num_of_marios_fighting)], dtype=np.float);
@@ -374,7 +374,7 @@ def mario_fight(marios):
 get move for the mario index using the neural network for that index
 """
 def get_move(marioID, marios):
-    move = np.array([a if a >= 0 else 0 for a in  mario_nn_layer1[marioID].dot(marios)])
+    move = np.array(mario_nn_layer1[marioID].dot(marios))
     returnmove = [0, 0] #default not moving
     #[left,stop,right,down,no jump,jump]
     if(move[1] > move[0] and move[1] > move[2]):
