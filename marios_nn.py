@@ -125,7 +125,7 @@ random_wrap = False
 wall_death_weight = -1 * num_of_tourn_select
 wall_collision_weight = -.1
 wrap = False
-wall_deadly = False
+wall_deadly = True
 random_arena_size = True
 
 """
@@ -623,6 +623,17 @@ def gen_against_gens_stats(gen):
         print(str(gen)+"            "+str(i)+"            "+str(round(np.mean(fit[0:numofevalgen])-
                 np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
 
+def gen_against_gen0_stats():
+    global wall_collision_weight
+    wall_collision_weight = 0
+    numofevalgen = 8
+    numofoppgen = 8
+    print("Eval_GEN    Opp_GEN      Fit_Diff")
+    for i in range(1,num_of_gen+1):
+        fit = fight_gen_against_gen(i,numofevalgen,0,numofoppgen)
+        print(str(i)+"            "+str(0)+"            "+str(round(np.mean(fit[0:numofevalgen])-
+                np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
+
 def fitness_all_gen():
     global displayArena
     global arena_max_duration
@@ -647,9 +658,11 @@ def fitness_all_gen():
             +"        "+str(round(max(results/100),2)))
 
 def main():
-    gen_against_gens_stats(100)
-    print("All gen fitness\n\n\n\n")
-    fitness_all_gen()
+    # gen_against_gens_stats(100)
+    # print("\n\n\n\nAll gen fitness")
+    # fitness_all_gen()
+    # print("\n\n\n\nAll gen fitness vs gen0")
+    gen_against_gen0_stats()
     # replay_last_GA()
     # global displayArena
     # load_gen(5,num_of_tourn_select)
