@@ -93,7 +93,7 @@ displayArena = False #if displayArena = True the current mario_fight will be dis
 displayBest = True #if displayBest = True the best of the generation will be displayed fighting
 #if save_gens = True the neural network weights will be outputted to a .dat file
 #using the file_names variable from below
-save_gens = True
+save_gens = False
 file_names = "best" #"file_names"+"mario Index"+"neural network layer"+".dat"
 
 
@@ -567,22 +567,33 @@ def genetic_algorithm():
         save the neural networks to output directory
         """
         path = "best_nn/gen"+str(gen)+"/"
-        try:
-            os.mkdir(path)
-        except OSError:
-            0
-        else:
-            0
         if(save_gens == True):
-            for i in range(len(best)-1,-1,len(best)-num_of_tourn_select):
-                np.savetxt(path+file_names+str(i)+'_1.dat',mario_nn_layer1[best[0]])
+            try:
+                os.mkdir(path)
+            except OSError:
+                0
+            else:
+                0
+            ind = [a for a in range(len(best)-1,len(best)-num_of_tourn_select-1,-1)]
+            for i in range(0,num_of_tourn_select):
+                np.savetxt(path+file_names+str(i)+'_1.dat',mario_nn_layer1[best[ind[i]]])
+
+def replay_last_GA():
+    global displayArena
+    global arena_max_duration
+    displayArena = True
+    arena_max_duration = 450
+    for i in range(0,101):
+        load_gen(i,num_of_tourn_select)
+        mario_fight([a for a in range(num_of_tourn_select)])
 
 def main():
+    replay_last_GA()
     # global displayArena
     # load_gen(5,num_of_tourn_select)
     # displayArena = True
     # mario_fight([a for a in range(num_of_tourn_select)])
-    genetic_algorithm()
+    # genetic_algorithm()
     pygame.quit()
 
 if __name__ == "__main__":
