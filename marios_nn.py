@@ -93,7 +93,7 @@ displayArena = False #if displayArena = True the current mario_fight will be dis
 displayBest = False #if displayBest = True the best of the generation will be displayed fighting
 #if save_gens = True the neural network weights will be outputted to a .dat file
 #using the file_names variable from below
-save_gens = True
+save_gens = False
 file_names = "best" #"file_names"+"mario Index"+"neural network layer"+".dat"
 directory = "best_nn2"
 
@@ -125,8 +125,8 @@ random_wrap = False
 wall_death_weight = -1 * num_of_tourn_select
 wall_collision_weight = -.1
 wrap = False
-wall_deadly = True
-random_arena_size = True
+wall_deadly = False
+random_arena_size = False
 
 """
 pygame gui variables
@@ -597,7 +597,7 @@ def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
     for i in range(numofgen1):
         mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
     path = directory+"/gen"+str(gen2)+"/"
-    for i in range(numofgen1,numofgen2):
+    for i in range(numofgen1,numofgen2+numofgen1):
         mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i-numofgen1)+"_1.dat")
 
     ids = [a for a in range(numofgen1+numofgen2)]
@@ -611,6 +611,9 @@ def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
         random.shuffle(ids)
     return results/100
 
+def reject_outliers(data, m=2):
+    return data[abs(data - np.mean(data)) < m * np.std(data)]
+
 def gen_against_gens_stats(gen):
     global wall_collision_weight
     wall_collision_weight = 0
@@ -620,8 +623,10 @@ def gen_against_gens_stats(gen):
     for i in range(num_of_gen+1):
         if(i == gen): continue
         fit = fight_gen_against_gen(100,numofevalgen,i,numofoppgen)
-        print(str(gen)+"            "+str(i)+"            "+str(round(np.mean(fit[0:numofevalgen])-
-                np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
+        print(str(gen)+"            "+str(i)+"            "+
+                str(round(
+                np.mean((fit[0:numofevalgen]))-
+                np.mean((fit[numofevalgen:numofevalgen+numofoppgen])),2)))
 
 def gen_against_gen0_stats():
     global wall_collision_weight
@@ -658,10 +663,10 @@ def fitness_all_gen():
             +"        "+str(round(max(results/100),2)))
 
 def main():
-    # gen_against_gens_stats(100)
-    # print("\n\n\n\nAll gen fitness")
-    # fitness_all_gen()
-    # print("\n\n\n\nAll gen fitness vs gen0")
+    gen_against_gens_stats(100)
+    print("\n\n\n\nAll gen fitness")
+    fitness_all_gen()
+    print("\n\n\n\nAll gen fitness vs gen0")
     gen_against_gen0_stats()
     # replay_last_GA()
     # global displayArena
