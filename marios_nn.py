@@ -125,7 +125,7 @@ random_wrap = False
 wall_death_weight = -1 * num_of_tourn_select
 wall_collision_weight = -.1
 wrap = False
-wall_deadly = True
+wall_deadly = False
 random_arena_size = True
 
 """
@@ -644,6 +644,7 @@ def fitness_all_gen():
     print("GEN         FIT      STD_DEV     MIN     MAX")
     for i in range(0,101):
         load_gen(i,num_of_tourn_select)
+        print(np.sum(mario_nn_layer1[0:num_of_tourn_select]))
         ids = [a for a in range(num_of_tourn_select)]
         results = np.array([0]*(num_of_tourn_select), dtype=np.float)
         random_marios = [a for a in range(num_of_tourn_select)]
