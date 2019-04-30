@@ -93,7 +93,7 @@ displayArena = False #if displayArena = True the current mario_fight will be dis
 displayBest = False #if displayBest = True the best of the generation will be displayed fighting
 #if save_gens = True the neural network weights will be outputted to a .dat file
 #using the file_names variable from below
-save_gens = False
+save_gens = True
 file_names = "best" #"file_names"+"mario Index"+"neural network layer"+".dat"
 directory = "best_nn2"
 
@@ -125,17 +125,17 @@ random_wrap = False
 wall_death_weight = -1 * num_of_tourn_select
 wall_collision_weight = -.1
 wrap = False
-wall_deadly = False
-random_arena_size = False
+wall_deadly = True
+random_arena_size = True
 
 """
 pygame gui variables
 """
 stop = False
-pygame.init()
-clock = pygame.time.Clock()
-display = pygame.display.set_mode((arena_len,arena_height+ground_height))
-pygame.display.set_caption('marios')
+# pygame.init()
+# clock = pygame.time.Clock()
+# display = pygame.display.set_mode((arena_len,arena_height+ground_height))
+# pygame.display.set_caption('marios')
 
 
 
@@ -182,24 +182,24 @@ def mario_fight(marios):
                         0, arena_leftwall+mario_width, arena_height),0)
                 pygame.draw.rect(display,(0,0,0),pygame.Rect(arena_rightwall,
                     0, 1000, arena_height),0)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                stop = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    playerymod = 1
-                if event.key == pygame.K_DOWN:
-                    playerymod = -1
-                if event.key == pygame.K_RIGHT:
-                    playerxmod = 1
-                if event.key == pygame.K_LEFT:
-                    playerxmod = -1
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
-                    playerxmod = 0
-                if event.key == pygame.K_DOWN:
-                    playerymod = 0
-        if stop == True: break
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    stop = True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        playerymod = 1
+                    if event.key == pygame.K_DOWN:
+                        playerymod = -1
+                    if event.key == pygame.K_RIGHT:
+                        playerxmod = 1
+                    if event.key == pygame.K_LEFT:
+                        playerxmod = -1
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                        playerxmod = 0
+                    if event.key == pygame.K_DOWN:
+                        playerymod = 0
+            if stop == True: break
 
         """
         update the mario x, y, x velocity, and y velocity
@@ -611,9 +611,6 @@ def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
         random.shuffle(ids)
     return results/100
 
-def reject_outliers(data, m=2):
-    return data[abs(data - np.mean(data)) < m * np.std(data)]
-
 def gen_against_gens_stats(gen):
     global wall_collision_weight
     wall_collision_weight = 0
@@ -623,10 +620,8 @@ def gen_against_gens_stats(gen):
     for i in range(num_of_gen+1):
         if(i == gen): continue
         fit = fight_gen_against_gen(100,numofevalgen,i,numofoppgen)
-        print(str(gen)+"            "+str(i)+"            "+
-                str(round(
-                np.mean((fit[0:numofevalgen]))-
-                np.mean((fit[numofevalgen:numofevalgen+numofoppgen])),2)))
+        print(str(gen)+"            "+str(i)+"            "+str(round(np.mean(fit[0:numofevalgen])-
+                np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
 
 def gen_against_gen0_stats():
     global wall_collision_weight
@@ -664,17 +659,17 @@ def fitness_all_gen():
 
 def main():
     gen_against_gens_stats(100)
-    print("\n\n\n\nAll gen fitness")
-    fitness_all_gen()
-    print("\n\n\n\nAll gen fitness vs gen0")
-    gen_against_gen0_stats()
+    # print("\n\n\n\nAll gen fitness")
+    # fitness_all_gen()
+    # print("\n\n\n\nAll gen fitness vs gen0")
+    # gen_against_gen0_stats()
     # replay_last_GA()
     # global displayArena
     # load_gen(5,num_of_tourn_select)
     # displayArena = True
     # mario_fight([a for a in range(num_of_tourn_select)])
     # genetic_algorithm()
-    pygame.quit()
+    # pygame.quit()
 
 if __name__ == "__main__":
     main()
