@@ -613,7 +613,7 @@ def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
 
 def gen_against_gens_stats(gen):
     global wall_collision_weight
-    wall_collision_weight = 0
+    # wall_collision_weight = 0
     numofevalgen = 8
     numofoppgen = 8
     print("Eval_GEN    Opp_GEN      Fit_Diff")
