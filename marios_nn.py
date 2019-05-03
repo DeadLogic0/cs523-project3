@@ -121,21 +121,22 @@ ground_rect = pygame.Rect(0, #ground rectangle
         ground_height)
 background_color = (0,108,170) #background color
 wall_color = (40,160,40) #background color
-random_wrap = False
+random_wrap = False #wraparound randomly turned on
+ #negative weight if mario dies by running into wall while wall_deadly = true
 wall_death_weight = -1 * num_of_tourn_select
-wall_collision_weight = -.1
-wrap = False
-wall_deadly = False
-random_arena_size = True
+wall_collision_weight = -.1 #negative weight for colliding with the wall
+wrap = False #wraparound active or not
+wall_deadly = False #deadly walls
+random_arena_size = True #random arena sizes
 
 """
 pygame gui variables
 """
 stop = False
-# pygame.init()
-# clock = pygame.time.Clock()
-# display = pygame.display.set_mode((arena_len,arena_height+ground_height))
-# pygame.display.set_caption('marios')
+pygame.init()
+clock = pygame.time.Clock()
+display = pygame.display.set_mode((arena_len,arena_height+ground_height))
+pygame.display.set_caption('marios')
 
 
 
@@ -582,15 +583,21 @@ def load_gen(gen, num_of_marios):
     for i in range(num_of_marios):
         mario_nn_layer1[i] = np.loadtxt(path+file_names+str(i)+"_1.dat")
 
+"""
+replay the last GA run in the gui
+"""
 def replay_last_GA():
     global displayArena
     global arena_max_duration
     displayArena = True
     arena_max_duration = 450
-    for i in range(0,101):
+    for i in range(0,num_of_gen + 1):
         load_gen(i,num_of_tourn_select)
         mario_fight([a for a in range(num_of_tourn_select)])
 
+"""
+returns average fitness for gen1 vs gen2
+"""
 def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
     global mario_nn_layer1
     path = directory+"/gen"+str(gen1)+"/"
@@ -611,9 +618,11 @@ def fight_gen_against_gen(gen1, numofgen1, gen2, numofgen2):
         random.shuffle(ids)
     return results/100
 
+"""
+prints out stats for generation gen against all other previous generations
+"""
 def gen_against_gens_stats(gen):
     global wall_collision_weight
-    # wall_collision_weight = 0
     numofevalgen = 8
     numofoppgen = 8
     print("Eval_GEN    Opp_GEN      Fit_Diff")
@@ -623,9 +632,11 @@ def gen_against_gens_stats(gen):
         print(str(gen)+"            "+str(i)+"            "+str(round(np.mean(fit[0:numofevalgen])-
                 np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
 
+"""
+prints out stats for every generation against generation 0
+"""
 def gen_against_gen0_stats():
     global wall_collision_weight
-    wall_collision_weight = 0
     numofevalgen = 8
     numofoppgen = 8
     print("Eval_GEN    Opp_GEN      Fit_Diff")
@@ -634,6 +645,9 @@ def gen_against_gen0_stats():
         print(str(i)+"            "+str(0)+"            "+str(round(np.mean(fit[0:numofevalgen])-
                 np.mean(fit[numofevalgen:numofevalgen+numofoppgen]),2)))
 
+"""
+prints out fitness stats for all generations
+"""
 def fitness_all_gen():
     global displayArena
     global arena_max_duration
@@ -659,18 +673,14 @@ def fitness_all_gen():
             +"        "+str(round(max(results/100),2)))
 
 def main():
-    gen_against_gens_stats(100)
+    # gen_against_gens_stats(100)
     # print("\n\n\n\nAll gen fitness")
     # fitness_all_gen()
     # print("\n\n\n\nAll gen fitness vs gen0")
     # gen_against_gen0_stats()
-    # replay_last_GA()
-    # global displayArena
-    # load_gen(5,num_of_tourn_select)
-    # displayArena = True
-    # mario_fight([a for a in range(num_of_tourn_select)])
+    replay_last_GA()
     # genetic_algorithm()
-    # pygame.quit()
+    pygame.quit()
 
 if __name__ == "__main__":
     main()

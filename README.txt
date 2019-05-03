@@ -27,8 +27,9 @@ marios_nn.py
     Function to call in main:
       replay_last_GA()
           function will display the best of every generation for the last GA on the GUI
-          To fight against the AI put the code:
+          To fight against the AI add the code:                before calling replay_last_GA() in the main
                                                 global player
                                                 player = True
+
           The controls for controlling Mario will be the arrow keys(UP, DOWN, LEFT, RIGHT)
           To increase the duration of the matches change arena_max_duration(line 593) to a larger number
